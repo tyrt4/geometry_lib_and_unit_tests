@@ -1,0 +1,50 @@
+name: Run unit tests
+
+# Запускать на каждое push
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    # матрица: каждый job выполнится на двух ОС (ubuntu и windows)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: [3.11] # можно добавить другие версии по желанию
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        # Если у вас есть requirements.txt — он будет использован.
+        # Иначе этот шаг ничего не сделает.
+        run: |
+          if [ -f requirements.txt ]; then
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+          else
+            python -m pip install --upgrade pip
+          fi
+        shell: bash
+
+      - name: Run unit tests (on Windows use PowerShell)
+        if: runner.os != 'Windows'
+        run: |
+          python -m unittest discover -v -p "unit_tests.py"
+        shell: bash
+
+      - name: Run unit tests on Windows
+        if: runner.os == 'Windows'
+        run: |
+          python -m unittest discover -v -p "unit_tests.py"
+        shell: powershell
