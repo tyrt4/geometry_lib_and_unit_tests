@@ -1,6 +1,5 @@
 name: Run unit tests
 
-# Запускать на каждое push
 on:
   push:
     branches: [ main, master ]
@@ -9,12 +8,11 @@ on:
 
 jobs:
   test:
-    # матрица: каждый job выполнится на двух ОС (ubuntu и windows)
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: [3.11] # можно добавить другие версии по желанию
+        python-version: [3.11] 
 
     steps:
       - name: Checkout repository
@@ -26,8 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        # Если у вас есть requirements.txt — он будет использован.
-        # Иначе этот шаг ничего не сделает.
+
         run: |
           if [ -f requirements.txt ]; then
             python -m pip install --upgrade pip
