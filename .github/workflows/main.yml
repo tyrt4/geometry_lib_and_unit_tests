@@ -1,47 +1,45 @@
 name: Run unit tests
 
+# Условия запуска: КОГДА этот workflow будет выполняться
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  push:                       # При загрузке (push) кода в репозиторий
+    branches: [ main, master ] # Только если push был в ветки main или master
 
+# Определяем задания, которые будут выполнены
 jobs:
+  # Задание с именем "test" (запуск тестов)
   test:
+    # Запускать задание на операционных системах, указанных в матрице ниже
     runs-on: ${{ matrix.os }}
+    
+    # Стратегия выполнения: используем матрицу для параллельных запусков
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: [3.11] 
+        os: [ubuntu-latest, windows-latest]  # Две ОС: Ubuntu и Windows
+        python-version: [3.11]                # Версия Python 3.11 для обеих ОС
 
+    # Шаги, которые будут выполнены на каждой виртуальной машине
     steps:
+      # ШАГ 1: Получить код репозитория
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # Используем стандартное действие для клонирования кода
 
+      # ШАГ 2: Установить указанную версию Python
       - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v4  # Используем стандартное действие для установки Python
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python-version }}  # Берём версию из матрицы (3.11)
 
-      - name: Install dependencies
-
-        run: |
-          if [ -f requirements.txt ]; then
-            python -m pip install --upgrade pip
-            pip install -r requirements.txt
-          else
-            python -m pip install --upgrade pip
-          fi
-        shell: bash
-
+      # ШАГ 3: Запустить unit-тесты на Linux-системах (где ОС НЕ Windows)
       - name: Run unit tests (on Windows use PowerShell)
-        if: runner.os != 'Windows'
+        if: runner.os != 'Windows'  # Условие: выполнять только НЕ на Windows
         run: |
           python -m unittest discover -v -p "unit_tests.py"
-        shell: bash
+        shell: bash  # Используем bash как оболочку
 
+       # ШАГ 4: Запустить unit-тесты на Windows
       - name: Run unit tests on Windows
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows'  # Условие: выполнять только на Windows
         run: |
           python -m unittest discover -v -p "unit_tests.py"
-        shell: powershell
+        shell: powershell  # На Windows используем PowerShell как оболочку
